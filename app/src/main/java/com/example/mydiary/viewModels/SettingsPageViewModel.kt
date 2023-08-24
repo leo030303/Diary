@@ -17,6 +17,16 @@ import java.util.*
 const val CREATE_FILE = 1
 const val PICK_CSV_FILE = 2
 class  SettingsPageViewModel: ViewModel() {
+    companion object {
+
+        @Volatile
+        private var instance: SettingsPageViewModel? = null
+
+        fun getInstance() =
+            instance ?: synchronized(this) {
+                instance ?: SettingsPageViewModel().also { instance = it }
+            }
+    }
     // Request code for creating a PDF document.
     private fun createFile(pickerInitialUri: Uri) {
         /*val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {

@@ -19,8 +19,19 @@ data class MainPageUIState(
 )
 
 class MainPageViewModel : ViewModel() {
+    companion object {
+
+        @Volatile
+        private var instance: MainPageViewModel? = null
+
+        fun getInstance() =
+            instance ?: synchronized(this) {
+                instance ?: MainPageViewModel().also { instance = it }
+            }
+    }
     private val _uiState = MutableStateFlow(MainPageUIState())
     val uiState: StateFlow<MainPageUIState> = _uiState.asStateFlow()
+
 
     fun updateSearchBar(newText: String, entryDao: EntryDao){
         _uiState.update { currentState ->
@@ -48,6 +59,17 @@ class MainPageViewModel : ViewModel() {
                 selectedMonth = Calendar.Builder()
                     .set(Calendar.YEAR, currentState.selectedMonth.get(Calendar.YEAR))
                     .set(Calendar.MONTH, currentState.selectedMonth.get(Calendar.MONTH)+1)
+                    .build()
+            )
+        }
+        getEntries(entryDao)
+    }
+    fun setSelectedMonth(newMonth: Int, newYear: Int, entryDao: EntryDao){
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedMonth = Calendar.Builder()
+                    .set(Calendar.YEAR, newYear)
+                    .set(Calendar.MONTH, newMonth)
                     .build()
             )
         }

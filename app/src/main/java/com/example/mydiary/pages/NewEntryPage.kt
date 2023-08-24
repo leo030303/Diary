@@ -2,30 +2,41 @@ package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import com.example.mydiary.EntryDao
 import com.example.mydiary.viewModels.NewEntryPageViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mydiary.util.Mood
+import com.example.mydiary.viewModels.MainPageViewModel
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewEntryPage(navController: NavController, entryDao: EntryDao, viewModel: NewEntryPageViewModel = viewModel(), entryID:Int?) {
+fun NewEntryPage(navController: NavController, entryDao: EntryDao, entryID:Int?) {
     if(entryID != null && entryID != 0){
-        viewModel.updateID(entryID, entryDao)
+        NewEntryPageViewModel.getInstance().updateID(entryID, entryDao)
     }
     Scaffold(
         topBar = {
@@ -34,24 +45,35 @@ fun NewEntryPage(navController: NavController, entryDao: EntryDao, viewModel: Ne
                     Text(text = "New Entry", color = MaterialTheme.colorScheme.primary)
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { NewEntryPageViewModel.getInstance().exitPage(navController) }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back Button"
                         )
+                    }
+                },
+                actions = {
+                    if(entryID != null && entryID != 0){
+                        IconButton(onClick = { NewEntryPageViewModel.getInstance().toggleConfirmation() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Delete"
+                            )
+                        }
                     }
                 }
             )
         }
     ) { contentPadding ->
         Column (modifier = Modifier.padding(contentPadding).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            DiaryDatePicker(viewModel = viewModel)
-            MoodSelector(viewModel = viewModel)
-            DiaryTextInput(viewModel = viewModel)
+            DiaryDatePicker()
+            MoodSelector()
+            PopupWindowDialog( entryDao = entryDao, navController = navController)
+            DiaryTextInput()
             Button(
                 modifier = Modifier.padding(10.dp),
                 onClick = {
-                    viewModel.saveToDatabase(entryDao)
+                    NewEntryPageViewModel.getInstance().saveToDatabase(entryDao)
                     navController.navigateUp()
                 }
             )
@@ -64,43 +86,60 @@ fun NewEntryPage(navController: NavController, entryDao: EntryDao, viewModel: Ne
 
 
 @Composable
-private fun MoodSelector(viewModel: NewEntryPageViewModel){
+private fun MoodSelector(){
     Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center){
-        MoodButton(viewModel, 1, Color.Cyan, "Very Happy")
-        MoodButton(viewModel, 2, Color.Green, "Happy")
-        MoodButton(viewModel, 3, Color.Blue, "Neutral")
-        MoodButton(viewModel, 4, Color.Yellow, "Sad")
-        MoodButton(viewModel, 5, Color.Red, "Very Sad")
+        Mood.values().reversed().forEach { mood ->
+            MoodButton(mood)
+        }
     }
 }
 
 @Composable
-private fun MoodButton(viewModel: NewEntryPageViewModel, moodInt:Int, moodTint:Color, contentDescription:String){
-    IconButton(
-        onClick = { viewModel.selectMood(moodInt) }
-    ){
-        Icon(
-            imageVector = Icons.Filled.Face,
-            contentDescription = contentDescription,
-            tint = moodTint,
-            modifier = Modifier.size(80.dp)
-        )
+private fun MoodButton(mood: Mood){
+    if(NewEntryPageViewModel.getInstance().uiState.collectAsState().value.mood == mood.value){
+        IconButton(
+            onClick = { NewEntryPageViewModel.getInstance().selectMood(mood.value) }
+        ){
+            Icon(
+                imageVector = mood.selectedIcon,
+                contentDescription = mood.title,
+                tint = mood.color,
+                modifier = Modifier.size(80.dp)
+            )
+        }
+    } else{
+        IconButton(
+            onClick = { NewEntryPageViewModel.getInstance().selectMood(mood.value) }
+        ){
+            Icon(
+                imageVector = mood.icon,
+                contentDescription = mood.title,
+                tint = mood.color,
+                modifier = Modifier.size(80.dp)
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DiaryTextInput(viewModel: NewEntryPageViewModel){
+private fun DiaryTextInput(){
     OutlinedTextField(
         modifier = Modifier.padding(10.dp).fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = 50.dp, max = 300.dp),
-        value = viewModel.uiState.collectAsState().value.content,
-        onValueChange = { viewModel.updateContent(it) },
-        label = { Text("What's Up?") }
+        value = NewEntryPageViewModel.getInstance().uiState.collectAsState().value.content,
+        onValueChange = { NewEntryPageViewModel.getInstance().updateContent(it) },
+        label = { Text("What's Up?") },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            capitalization = KeyboardCapitalization.Sentences,
+            autoCorrect = true,
+            imeAction = ImeAction.Done
+            )
     )
 }
 
 @Composable
-private fun DiaryDatePicker(viewModel: NewEntryPageViewModel){
+private fun DiaryDatePicker(){
     val mContext = LocalContext.current
 
 // Declaring integer values
@@ -110,7 +149,7 @@ private fun DiaryDatePicker(viewModel: NewEntryPageViewModel){
     val m1Day: Int
 
 // Initializing a Calendar
-    //val mCalendar = viewModel.uiState.collectAsState().value.selectedDate
+    //val mCalendar = NewEntryPageViewModel.getInstance().uiState.collectAsState().value.selectedDate
     val mCalendar = Calendar.getInstance()
     if (mCalendar.get(Calendar.HOUR_OF_DAY) <= 6){
         mCalendar.add(Calendar.DAY_OF_MONTH, -1)
@@ -121,8 +160,8 @@ private fun DiaryDatePicker(viewModel: NewEntryPageViewModel){
     m1Month = mCalendar.get(Calendar.MONTH)
     m1Day = mCalendar.get(Calendar.DAY_OF_MONTH)
 
-    if(viewModel.uiState.collectAsState().value.dateString == ""){
-        viewModel.updateDate(m1Day, m1Month, m1Year)
+    if(NewEntryPageViewModel.getInstance().uiState.collectAsState().value.dateString == ""){
+        NewEntryPageViewModel.getInstance().updateDate(m1Day, m1Month, m1Year)
     }
 
 // Declaring a string value to
@@ -133,7 +172,7 @@ private fun DiaryDatePicker(viewModel: NewEntryPageViewModel){
     val mDatePickerDialog = DatePickerDialog(
         mContext,
         { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
-            viewModel.updateDate(mDayOfMonth, mMonth, mYear)
+            NewEntryPageViewModel.getInstance().updateDate(mDayOfMonth, mMonth, mYear)
         }, m1Year, m1Month, m1Day
     )
 
@@ -141,9 +180,57 @@ private fun DiaryDatePicker(viewModel: NewEntryPageViewModel){
         Button(onClick = {
             mDatePickerDialog.show()
         }) {
-            Text(text = viewModel.uiState.collectAsState().value.dateString)
+            Text(text = NewEntryPageViewModel.getInstance().uiState.collectAsState().value.dateString)
         }
     }
 }
 
 
+private fun deleteEntry(entryDao: EntryDao, navController: NavController){
+    NewEntryPageViewModel.getInstance().deleteEntry(entryDao)
+    NewEntryPageViewModel.getInstance().toggleConfirmation()
+    NewEntryPageViewModel.getInstance().exitPage(navController)
+}
+
+
+
+
+
+
+@Composable
+fun PopupWindowDialog(entryDao: EntryDao, navController: NavController) {
+    if(NewEntryPageViewModel.getInstance().uiState.collectAsState().value.showConfirmationPopup){
+        Box {
+            val popupWidth = 300.dp
+            val popupHeight = 100.dp
+            Popup(
+                alignment = Alignment.TopCenter,
+                properties = PopupProperties()
+            ) {
+                Box(
+                    Modifier
+                        .size(popupWidth, popupHeight)
+                        .padding(top = 5.dp)
+                        .border(1.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
+                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text="Are you sure you want to delete this entry?")
+                        Row {
+                            Button(onClick = { deleteEntry(entryDao, navController) }){Text(text="Yes")}
+                            Spacer(modifier = Modifier.weight(1F))
+                            Button(onClick = { NewEntryPageViewModel.getInstance().toggleConfirmation() }){Text(text="No")}
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}

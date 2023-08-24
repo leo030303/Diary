@@ -1,25 +1,16 @@
 package com.example.mydiary
 
-import android.content.Intent
+import android.R.attr.data
 import android.os.Bundle
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.core.net.toFile
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,7 +23,7 @@ import com.example.mydiary.pages.SettingsPage
 import com.example.mydiary.ui.theme.MyDiaryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
+import java.io.*
 
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +34,7 @@ class MainActivity : ComponentActivity() {
             AppDatabase::class.java, "AppDatabase"
         ).build()
         val entryDao = db.entryDao()
-        val previewRequest =
+        val readFileRequest =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 if (it.resultCode == RESULT_OK) {
                     val selectedFile = it.data
@@ -69,7 +60,6 @@ class MainActivity : ComponentActivity() {
                             lifecycleScope.launch(Dispatchers.IO) {
                                 try {
                                     entries.forEach {item ->
-                                        Log.d("mema", item.dateCreated.toString())
                                         entryDao.insert(item)
                                     }
                                 } catch (e: Exception) {
@@ -80,6 +70,31 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                }
+            }
+        val writeFileRequest =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                try{
+                    val pfd:ParcelFileDescriptor = contentResolver.openFileDescriptor(it.data?.data!!, "w")!!
+                    val fileOutputStream = FileOutputStream(pfd.fileDescriptor);
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            entryDao.getAll().collect{entries ->
+                                entries.forEach {entry->
+                                    val toOutput = "${entry.dateCreated},${entry.mood},${'"'+entry.content+'"'}\n"
+                                    fileOutputStream.write(toOutput.toByteArray())
+                                }
+                            }
+                            fileOutputStream.close();
+                            pfd.close()
+                        } catch (e: Exception) {
+                            println("The flow has thrown an exception: $e")
+                        }
+                    }
+                } catch (e:FileNotFoundException) {
+                    e.printStackTrace();
+                } catch (e:IOException) {
+                    e.printStackTrace();
                 }
             }
         setContent {
@@ -95,7 +110,7 @@ class MainActivity : ComponentActivity() {
                             NewEntryPage(navController, entryDao, entryID = backStackEntry.arguments?.getInt("entryID"))
                         }
 
-                        composable("settingsPage") { SettingsPage(navController, previewRequest) }
+                        composable("settingsPage") { SettingsPage(navController, readFileRequest, writeFileRequest) }
                     }
                 }
             }
