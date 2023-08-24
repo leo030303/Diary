@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
@@ -11,7 +13,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,9 +28,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import com.example.mydiary.EntryDao
 import com.example.mydiary.viewModels.NewEntryPageViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mydiary.util.Mood
-import com.example.mydiary.viewModels.MainPageViewModel
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)

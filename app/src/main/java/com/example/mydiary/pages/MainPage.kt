@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
@@ -29,7 +31,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mydiary.*
 import com.example.mydiary.util.Mood
@@ -250,10 +251,10 @@ private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
                             var greenTotal = 0F
                             var blueTotal = 0F
                             var itemsCount = 0
-                            it.value.forEach {
-                                redTotal += Mood.values()[it.mood].color.red
-                                greenTotal += Mood.values()[it.mood].color.green
-                                blueTotal += Mood.values()[it.mood].color.blue
+                            it.value.forEach {entry ->
+                                redTotal += Mood.values()[entry.mood].color.red
+                                greenTotal += Mood.values()[entry.mood].color.green
+                                blueTotal += Mood.values()[entry.mood].color.blue
                                 itemsCount += 1
                             }
                             Color(redTotal/itemsCount, greenTotal/itemsCount, blueTotal/itemsCount)
@@ -322,7 +323,7 @@ private fun MainPageDatePicker(entryDao: EntryDao){
 // initial values as current values (present year, month and day)
     val mDatePickerDialog = DatePickerDialog(
         mContext,
-        { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
+        { _: DatePicker, mYear: Int, mMonth: Int, _: Int ->
             MainPageViewModel.getInstance().setSelectedMonth(mMonth, mYear, entryDao)
         }, m1Year, m1Month, m1Day
     )

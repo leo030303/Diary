@@ -1,10 +1,8 @@
+@file:Suppress("FunctionName")
+
 package com.example.mydiary.pages
 
 import android.content.Intent
-import android.database.sqlite.SQLiteDatabase
-import android.os.Environment
-import android.provider.DocumentsContract
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -12,18 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentRecomposeScope
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import com.example.mydiary.EntryDao
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileWriter
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

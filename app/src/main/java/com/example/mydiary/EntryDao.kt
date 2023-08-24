@@ -20,9 +20,6 @@ interface EntryDao {
     @Insert
     suspend fun insert(vararg entry: Entry): List<Long>
 
-    @Insert
-    suspend fun insertAll(entries: List<Entry>): List<Long>
-
     @Update
     suspend fun update(vararg entry: Entry)
 

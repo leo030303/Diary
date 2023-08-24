@@ -1,9 +1,7 @@
 package com.example.mydiary
 
-import android.R.attr.data
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,9 +33,9 @@ class MainActivity : ComponentActivity() {
         ).build()
         val entryDao = db.entryDao()
         val readFileRequest =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == RESULT_OK) {
-                    val selectedFile = it.data
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {result ->
+                if (result.resultCode == RESULT_OK) {
+                    val selectedFile = result.data
                     val fileAddress = selectedFile?.data
                     if(fileAddress!=null){
                         val myFile = contentResolver.openInputStream(fileAddress)
@@ -46,8 +44,8 @@ class MainActivity : ComponentActivity() {
                                 .bufferedReader()
                                 .lineSequence()
                                 .filter { it.isNotBlank() }
-                                .map {
-                                    val (date, mood, content) = it.split(',', ignoreCase = false, limit = 3)
+                                .map {line ->
+                                    val (date, mood, content) = line.split(',', ignoreCase = false, limit = 3)
                                     var newContent = content
                                     if (content!= ""){
                                         if (content[0] == '"'){
@@ -76,7 +74,7 @@ class MainActivity : ComponentActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 try{
                     val pfd:ParcelFileDescriptor = contentResolver.openFileDescriptor(it.data?.data!!, "w")!!
-                    val fileOutputStream = FileOutputStream(pfd.fileDescriptor);
+                    val fileOutputStream = FileOutputStream(pfd.fileDescriptor)
                     lifecycleScope.launch(Dispatchers.IO) {
                         try {
                             entryDao.getAll().collect{entries ->
@@ -85,16 +83,16 @@ class MainActivity : ComponentActivity() {
                                     fileOutputStream.write(toOutput.toByteArray())
                                 }
                             }
-                            fileOutputStream.close();
+                            fileOutputStream.close()
                             pfd.close()
                         } catch (e: Exception) {
                             println("The flow has thrown an exception: $e")
                         }
                     }
                 } catch (e:FileNotFoundException) {
-                    e.printStackTrace();
+                    e.printStackTrace()
                 } catch (e:IOException) {
-                    e.printStackTrace();
+                    e.printStackTrace()
                 }
             }
         setContent {

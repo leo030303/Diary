@@ -1,6 +1,5 @@
 package com.example.mydiary.viewModels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -9,7 +8,6 @@ import com.example.mydiary.EntryDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.util.Calendar
 
 data class NewEntryPageUIState(
