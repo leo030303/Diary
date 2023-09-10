@@ -5,11 +5,13 @@ package com.example.mydiary.pages
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
@@ -33,7 +35,7 @@ fun SettingsPage(navController: NavController, filePickerCallback: ActivityResul
             )
         }
     ) { contentPadding ->
-        Column (modifier = Modifier.padding(contentPadding)) {
+        Column (modifier = Modifier.padding(contentPadding).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Button(onClick = {val intent = Intent()
                 .setType("*/*")
                 .setAction(Intent.ACTION_OPEN_DOCUMENT)

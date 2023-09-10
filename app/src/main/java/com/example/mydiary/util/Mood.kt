@@ -6,10 +6,10 @@ import androidx.compose.material.icons.outlined.Face
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
-enum class Mood(val icon: ImageVector, val selectedIcon: ImageVector, val color: Color, val title: String, val value: Int) {
-    TERRIBLE(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 255, green = 150, blue = 0), "Awful", 0),
-    BAD(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 255, green = 220, blue = 0), "Bad", 1),
-    OKAY(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 180, green = 255, blue = 0), "Okay", 2),
-    GOOD(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 30, green = 255, blue = 80), "Good", 3),
-    AWESOME(Icons.Outlined.Face, Icons.Filled.Face, Color.Cyan, "Awesome", 4)
+enum class Mood(val icon: ImageVector, val selectedIcon: ImageVector, val color: Color, val title: String, val barPercentage: Int, val value: Int) {
+    TERRIBLE(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 217, green = 23, blue = 14), "Awful", 20, 0),
+    BAD(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 246, green = 138, blue = 35), "Bad", 40, 1),
+    OKAY(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 248, green = 219, blue = 1), "Okay", 60, 2),
+    GOOD(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 52, green = 178, blue = 107), "Good", 80, 3),
+    AWESOME(Icons.Outlined.Face, Icons.Filled.Face, Color(red = 0, green = 89, blue = 190), "Awesome", 100, 4)
 }

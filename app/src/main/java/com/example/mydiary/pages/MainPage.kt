@@ -137,12 +137,13 @@ private fun EntryItem(entry: Entry, navController: NavController){
     val monthName:String = mCal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH)!!
     val dateText:String = dayName+", "+mCal.get(Calendar.DAY_OF_MONTH)+" "+monthName
     val mood = Mood.values()[entry.mood]
+    val contrastColour = MaterialTheme.colorScheme.secondary.copy(alpha = .3F)
     Card (
-        modifier = Modifier.padding(10.dp).fillMaxWidth().background(color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(10.dp)),
+        modifier = Modifier.padding(10.dp).fillMaxWidth().background(color = MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(12.dp)),
         onClick = { navController.navigate("newEntryPage/${entry.eid}") }
     ){
         Row(
-            modifier = Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
+            modifier = Modifier.background(color = contrastColour)
         ){
             Text(modifier = Modifier.padding(5.dp), text = dateText, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Spacer(modifier = Modifier.weight(1F))
@@ -242,44 +243,44 @@ private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
                         .fillMaxWidth()
                 ) {
                     val w = size.width
+                    val baseBarHeight = size.height-50
 
                     val count = currentMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
-                    val barColours = entries
+                    val barRects: List<List<Pair<Color, Float>>> = entries
                         .groupBy { it.dateCreated }
                         .map {
-                            var redTotal = 0F
-                            var greenTotal = 0F
-                            var blueTotal = 0F
+                            var percentTotal = 0
                             var itemsCount = 0
+                            val moodCountsArray = intArrayOf(0,0,0,0,0)
                             it.value.forEach {entry ->
-                                redTotal += Mood.values()[entry.mood].color.red
-                                greenTotal += Mood.values()[entry.mood].color.green
-                                blueTotal += Mood.values()[entry.mood].color.blue
+                                moodCountsArray[entry.mood]+=1
+                                percentTotal += Mood.values()[entry.mood].barPercentage
                                 itemsCount += 1
                             }
-                            Color(redTotal/itemsCount, greenTotal/itemsCount, blueTotal/itemsCount)
+                            val totalBarHeight = ((percentTotal.toFloat()/itemsCount.toFloat())/100)*baseBarHeight
+                            moodCountsArray.mapIndexed {index, moodCount  ->
+                                val moodColor = Mood.values()[index].color
+                                val partialBarHeight = totalBarHeight*(moodCount.toFloat()/itemsCount.toFloat())
+                                Pair(moodColor, partialBarHeight)
+                            }
                         }
-
-
-                    barColours.forEachIndexed{index, barColour ->
-                        if(index%4 == 0){
+                    barRects.forEachIndexed{index, barRectMiniList ->
+                        var currentTotalOffset = 0F
+                        barRectMiniList.forEach { barRect ->
                             drawRect(
-                                color = barColour,
-                                topLeft = Offset(x = index * (w/count), y = 0F),
-                                size = Size(30f, size.height-50) //fix width
+                                color = barRect.first,
+                                topLeft = Offset(x = index * (w/count), y = baseBarHeight-barRect.second-currentTotalOffset),
+                                size = Size(30f, barRect.second) //fix width
                             )
-                            drawText(
-                                textMeasurer = textMeasurer,
-                                text = (index+1).toString(),
-                                topLeft = Offset(x = index * (w/count), y = size.height-50),
-                                style = TextStyle(color = textColor)
-                            )
-                        } else{
-                            drawRect(
-                                color = barColour,
-                                topLeft = Offset(x = index * (w/count), y = 0F),
-                                size = Size(30f, size.height-70) //fix width
-                            )
+                            currentTotalOffset+=barRect.second
+                            if(index%4 == 0){
+                                drawText(
+                                    textMeasurer = textMeasurer,
+                                    text = (index+1).toString(),
+                                    topLeft = Offset(x = index * (w/count), y = size.height-50),
+                                    style = TextStyle(color = textColor)
+                                )
+                            }
                         }
                     }
                 }} else {
