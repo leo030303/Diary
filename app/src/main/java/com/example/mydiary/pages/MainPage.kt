@@ -3,7 +3,6 @@
 package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
-import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -17,7 +16,6 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -25,15 +23,11 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -224,17 +218,14 @@ fun SearchView(
 
 }
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
-    val textColor = MaterialTheme.colorScheme.secondary
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {if (initEntries.isNotEmpty()){
         val entries = initEntries.reversed()
-        val textMeasurer = rememberTextMeasurer()
         Column {
             Canvas(
                 modifier = Modifier
@@ -273,14 +264,6 @@ private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
                             size = Size(30f, barRect.second) //fix width
                         )
                         currentTotalOffset+=barRect.second
-                        /*if(index%4 == 0){
-                            drawText(
-                                textMeasurer = textMeasurer,
-                                text = (index+1).toString(),
-                                topLeft = Offset(x = index * (w/count), y = size.height-50),
-                                style = TextStyle(color = textColor)
-                            )
-                        }*/
                     }
                 }
             }
