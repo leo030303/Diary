@@ -3,6 +3,7 @@
 package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -22,13 +23,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -115,7 +120,8 @@ private fun MonthSelector(entryDao: EntryDao){
 
 }
 
-
+@Composable
+fun dpToSp(dp: Dp) = with(LocalDensity.current) { dp.toSp() }
 
 
 
@@ -226,71 +232,76 @@ private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (initEntries.isNotEmpty()){
-                val entries = initEntries.reversed()
-                val textMeasurer = rememberTextMeasurer()
-                Canvas(
-                    modifier = Modifier
-                        .height(80.dp)
-                        .padding(8.dp)
-                        .fillMaxWidth()
-                ) {
-                    val w = size.width
-                    val baseBarHeight = size.height-50
+    ) {if (initEntries.isNotEmpty()){
+        val entries = initEntries.reversed()
+        val textMeasurer = rememberTextMeasurer()
+        Column {
+            Canvas(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(top = 5.dp, start = 5.dp, end = 5.dp, bottom = 0.dp)
+                    .fillMaxWidth()
+            ) {
+                val w = size.width
+                val baseBarHeight = size.height
 
-                    val count = currentMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
-                    val barRects: List<List<Pair<Color, Float>>> = entries
-                        .groupBy { it.dateCreated }
-                        .map {
-                            var percentTotal = 0
-                            var itemsCount = 0
-                            val moodCountsArray = intArrayOf(0,0,0,0,0)
-                            it.value.forEach {entry ->
-                                moodCountsArray[entry.mood]+=1
-                                percentTotal += Mood.values()[entry.mood].barPercentage
-                                itemsCount += 1
-                            }
-                            val totalBarHeight = ((percentTotal.toFloat()/itemsCount.toFloat())/100)*baseBarHeight
-                            moodCountsArray.mapIndexed {index, moodCount  ->
-                                val moodColor = Mood.values()[index].color
-                                val partialBarHeight = totalBarHeight*(moodCount.toFloat()/itemsCount.toFloat())
-                                Pair(moodColor, partialBarHeight)
-                            }
+                val count = currentMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
+                val barRects: List<List<Pair<Color, Float>>> = entries
+                    .groupBy { it.dateCreated }
+                    .map {
+                        var percentTotal = 0
+                        var itemsCount = 0
+                        val moodCountsArray = intArrayOf(0,0,0,0,0)
+                        it.value.forEach {entry ->
+                            moodCountsArray[entry.mood]+=1
+                            percentTotal += Mood.values()[entry.mood].barPercentage
+                            itemsCount += 1
                         }
-                    barRects.forEachIndexed{index, barRectMiniList ->
-                        var currentTotalOffset = 0F
-                        barRectMiniList.forEach { barRect ->
-                            drawRect(
-                                color = barRect.first,
-                                topLeft = Offset(x = index * (w/count), y = baseBarHeight-barRect.second-currentTotalOffset),
-                                size = Size(30f, barRect.second) //fix width
-                            )
-                            currentTotalOffset+=barRect.second
-                            if(index%4 == 0){
-                                drawText(
-                                    textMeasurer = textMeasurer,
-                                    text = (index+1).toString(),
-                                    topLeft = Offset(x = index * (w/count), y = size.height-50),
-                                    style = TextStyle(color = textColor)
-                                )
-                            }
+                        val totalBarHeight = ((percentTotal.toFloat()/itemsCount.toFloat())/100)*baseBarHeight
+                        moodCountsArray.mapIndexed {index, moodCount  ->
+                            val moodColor = Mood.values()[index].color
+                            val partialBarHeight = totalBarHeight*(moodCount.toFloat()/itemsCount.toFloat())
+                            Pair(moodColor, partialBarHeight)
                         }
                     }
-                }} else {
-                Text(
-                    text = "Add entries to get stats",
-                    modifier = Modifier.fillMaxSize(),
-                    textAlign = TextAlign.Center
-                )
+                barRects.forEachIndexed{index, barRectMiniList ->
+                    var currentTotalOffset = 0F
+                    barRectMiniList.forEach { barRect ->
+                        drawRect(
+                            color = barRect.first,
+                            topLeft = Offset(x = index * (w/count), y = baseBarHeight-barRect.second-currentTotalOffset),
+                            size = Size(30f, barRect.second) //fix width
+                        )
+                        currentTotalOffset+=barRect.second
+                        /*if(index%4 == 0){
+                            drawText(
+                                textMeasurer = textMeasurer,
+                                text = (index+1).toString(),
+                                topLeft = Offset(x = index * (w/count), y = size.height-50),
+                                style = TextStyle(color = textColor)
+                            )
+                        }*/
+                    }
+                }
             }
+            Text(
+                text= "1   4   7   10  13  16  19  22  25  28",
+                modifier = Modifier
+                    .height(20.dp)
+                    .padding(top = 0.dp, start = 5.dp, end = 5.dp, bottom = 5.dp)
+                    .fillMaxWidth(),
+                fontFamily = FontFamily.Monospace,
+                fontSize = dpToSp(14.dp)
+            )
         }
+
+    } else {
+        Text(
+            text = "Add entries to get stats",
+            modifier = Modifier.fillMaxSize(),
+            textAlign = TextAlign.Center
+        )
+    }
     }
 }
 
