@@ -18,12 +18,12 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPage(navController: NavController, filePickerCallback: ActivityResultLauncher<Intent>, fileWriterCallback: ActivityResultLauncher<Intent>) {
+fun AboutPage(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Settings", color = MaterialTheme.colorScheme.primary)
+                    Text(text = "About", color = MaterialTheme.colorScheme.primary)
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
@@ -33,33 +33,14 @@ fun SettingsPage(navController: NavController, filePickerCallback: ActivityResul
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = { navController.navigate("aboutPage") }){
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = "About Page"
-                        )
-                    }
-                }
             )
         }
     ) { contentPadding ->
         Column (modifier = Modifier.padding(contentPadding).fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-            Text("Manage Data")
-            Button(onClick = {val intent = Intent()
-                .setType("*/*")
-                .setAction(Intent.ACTION_OPEN_DOCUMENT)
-                filePickerCallback.launch(intent)}){
-                Text("Import from CSV")
-            }
-            Button(onClick = { val intent = Intent()
-                .setType("text/csv")
-                .setAction(Intent.ACTION_CREATE_DOCUMENT)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .putExtra(Intent.EXTRA_TITLE, "diary_entries.csv")
-                fileWriterCallback.launch(intent)}){
-                Text("Export to CSV")
-            }
+            Text("Version: 1.0.0")
+            Text("Author: Leo Ring")
+            Text("Project Github: https://github.com/leo030303/Diary")
+            Text("License: ")
         }
     }
 }

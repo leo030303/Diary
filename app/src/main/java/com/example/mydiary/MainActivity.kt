@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.room.Room
+import com.example.mydiary.pages.AboutPage
 import com.example.mydiary.pages.MainPage
 import com.example.mydiary.pages.NewEntryPage
 import com.example.mydiary.pages.SettingsPage
@@ -109,6 +110,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("settingsPage") { SettingsPage(navController, readFileRequest, writeFileRequest) }
+                        composable("aboutPage") { AboutPage(navController) }
                     }
                 }
             }
