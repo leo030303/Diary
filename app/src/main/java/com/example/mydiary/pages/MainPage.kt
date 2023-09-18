@@ -22,7 +22,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -93,25 +92,28 @@ private fun MonthSelector(entryDao: EntryDao){
             ) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Previous Month"
+                    contentDescription = "Previous Month",
+                    modifier = Modifier.width(30.dp),
                 )
             }
             Spacer(Modifier.weight(1f))
             MainPageDatePicker(entryDao)
             Spacer(Modifier.weight(1f))
-            IconButton(
-                onClick = { MainPageViewModel.getInstance().incrementSelectedMonth(entryDao) }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowForward,
-                    contentDescription = "Next Month"
-                )
+            if(MainPageViewModel.getInstance().uiState.collectAsState().value.selectedMonth.get(Calendar.MONTH) < Calendar.getInstance().get(Calendar.MONTH)){
+                IconButton(
+                    onClick = { MainPageViewModel.getInstance().incrementSelectedMonth(entryDao) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowForward,
+                        contentDescription = "Next Month",
+                        modifier = Modifier.width(30.dp),
+                    )
+                }
+            }else{
+                Spacer(Modifier.width(30.dp))
             }
+        }
     }
-
-    }
-
-
 }
 
 @Composable
