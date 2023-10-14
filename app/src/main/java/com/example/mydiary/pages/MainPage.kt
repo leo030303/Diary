@@ -5,6 +5,7 @@ package com.example.mydiary.pages
 import android.app.DatePickerDialog
 import android.util.Log
 import android.widget.DatePicker
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,9 +19,12 @@ import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
@@ -56,10 +60,17 @@ fun MainPage(navController: NavController, entryDao: EntryDao) {
                         )
                     }
                     IconButton(onClick = { MainPageViewModel.getInstance().toggleSearch(entryDao) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
-                        )
+                        if(!MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch){
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "Search"
+                            )
+                        } else{
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Close"
+                            )
+                        }
                     }
                 })
         },
@@ -76,7 +87,7 @@ fun MainPage(navController: NavController, entryDao: EntryDao) {
             SearchView(entryDao = entryDao)
             MonthSelector(entryDao = entryDao)
             if(!MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch){
-                MoodBars(MainPageViewModel.getInstance().uiState.collectAsState().value.entries, MainPageViewModel.getInstance().uiState.collectAsState().value.selectedMonth)
+                MoodBars(MainPageViewModel.getInstance().uiState.collectAsState().value.entries)
             }
             EntriesList(MainPageViewModel.getInstance().uiState.collectAsState().value.entries, navController)
         }
@@ -180,17 +191,31 @@ private fun EntryItem(entry: Entry, navController: NavController){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchView(
-    modifier: Modifier = Modifier,
     entryDao: EntryDao
 ) {
+    BackHandler(
+        enabled = MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch
+    ) {
+        MainPageViewModel.getInstance().toggleSearch(entryDao)
+    }
     if(MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch){
+        val focusRequester = remember { FocusRequester() }
+        var textFieldLoaded by remember { mutableStateOf(false) }
         TextField(
             value = MainPageViewModel.getInstance().uiState.collectAsState().value.searchBarText,
             onValueChange = { value ->
                 MainPageViewModel.getInstance().updateSearchBar(value, entryDao)
             },
-            modifier = modifier.fillMaxWidth(),
-            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onPrimary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onGloballyPositioned {
+                    if (!textFieldLoaded) {
+                        focusRequester.requestFocus()
+                        textFieldLoaded = true
+                    }
+                },
+            textStyle = MaterialTheme.typography.bodyMedium.copy(),
             leadingIcon = {
                 Icon(
                     Icons.Default.Search,
@@ -225,7 +250,7 @@ fun SearchView(
 }
 
 @Composable
-private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
+private fun MoodBars(initEntries: List<Entry>){
     Card(
         modifier = Modifier
             .fillMaxWidth()
