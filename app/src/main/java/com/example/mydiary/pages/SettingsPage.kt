@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,12 +53,17 @@ fun SettingsPage(navController: NavController, filePickerCallback: ActivityResul
                 filePickerCallback.launch(intent)}){
                 Text("Import from CSV")
             }
-            Button(onClick = { val intent = Intent()
+            Button(onClick = {
+                val todayCal = Calendar.getInstance()
+                val monthName:String = todayCal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH)!!
+                val fileName:String = "diary_entries_"+todayCal.get(Calendar.DAY_OF_MONTH)+"_"+monthName+"_"+todayCal.get(Calendar.YEAR)+".csv"
+                val intent = Intent()
                 .setType("text/csv")
                 .setAction(Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE)
-                .putExtra(Intent.EXTRA_TITLE, "diary_entries.csv")
-                fileWriterCallback.launch(intent)}){
+                .putExtra(Intent.EXTRA_TITLE, fileName)
+                fileWriterCallback.launch(intent)
+            }){
                 Text("Export to CSV")
             }
         }

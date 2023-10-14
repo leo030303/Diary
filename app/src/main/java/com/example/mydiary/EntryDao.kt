@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EntryDao {
-    @Query("SELECT * FROM entry")
+    @Query("SELECT * FROM entry ORDER BY date_created DESC")
     fun getAll(): Flow<List<Entry>>
 
     @Query("SELECT * FROM entry WHERE eid = :id LIMIT 1")
