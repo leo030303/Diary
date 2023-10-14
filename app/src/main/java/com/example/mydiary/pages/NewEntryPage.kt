@@ -18,7 +18,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -100,7 +102,7 @@ private fun MoodButton(mood: Mood){
             onClick = { NewEntryPageViewModel.getInstance().selectMood(mood.value) }
         ){
             Icon(
-                imageVector = mood.selectedIcon,
+                imageVector = ImageVector.vectorResource(mood.selectedIconResourceID),
                 contentDescription = mood.title,
                 tint = mood.color,
                 modifier = Modifier.size(80.dp)
@@ -111,7 +113,7 @@ private fun MoodButton(mood: Mood){
             onClick = { NewEntryPageViewModel.getInstance().selectMood(mood.value) }
         ){
             Icon(
-                imageVector = mood.icon,
+                imageVector = ImageVector.vectorResource(mood.iconResourceID),
                 contentDescription = mood.title,
                 tint = mood.color,
                 modifier = Modifier.size(80.dp)

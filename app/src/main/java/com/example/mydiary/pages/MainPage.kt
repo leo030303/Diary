@@ -24,9 +24,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -164,26 +166,22 @@ private fun EntryItem(entry: Entry, navController: NavController){
         ){
             Text(modifier = Modifier.padding(5.dp), text = dateText, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Spacer(modifier = Modifier.weight(1F))
+            Icon(
+                imageVector = ImageVector.vectorResource(mood.iconResourceID),
+                contentDescription = mood.title,
+                tint = mood.color,
+                modifier = Modifier.size(40.dp)
+            )
             Text(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp), text = mood.title,
                 color = mood.color, fontWeight = FontWeight.Bold, fontSize = 25.sp,
                 fontStyle = FontStyle.Italic
             )
         }
-        Row(
-            modifier = Modifier.padding(10.dp).fillMaxWidth()
-        ){
-            Icon(
-                imageVector = mood.icon,
-                contentDescription = mood.title,
-                tint = mood.color,
-                modifier = Modifier.size(40.dp)
-            )
-            Text(
-                text = entry.content,
-                modifier = Modifier.padding(10.dp),
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
+        Text(
+            text = entry.content,
+            modifier = Modifier.padding(20.dp).fillMaxWidth(),
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+        )
 
     }
 }
