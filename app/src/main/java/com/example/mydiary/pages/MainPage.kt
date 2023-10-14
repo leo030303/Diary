@@ -3,6 +3,7 @@
 package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
+import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -99,7 +100,9 @@ private fun MonthSelector(entryDao: EntryDao){
             Spacer(Modifier.weight(1f))
             MainPageDatePicker(entryDao)
             Spacer(Modifier.weight(1f))
-            if(MainPageViewModel.getInstance().uiState.collectAsState().value.selectedMonth.get(Calendar.MONTH) < Calendar.getInstance().get(Calendar.MONTH)){
+            val temp = Calendar.getInstance()
+            temp.set(Calendar.DAY_OF_MONTH, 1)
+            if(MainPageViewModel.getInstance().uiState.collectAsState().value.selectedMonth < temp){
                 IconButton(
                     onClick = { MainPageViewModel.getInstance().incrementSelectedMonth(entryDao) }
                 ) {
@@ -137,7 +140,8 @@ private fun EntryItem(entry: Entry, navController: NavController){
     mCal.timeInMillis = entry.dateCreated
     val dayName:String = mCal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.ENGLISH)!!
     val monthName:String = mCal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH)!!
-    val dateText:String = dayName+", "+mCal.get(Calendar.DAY_OF_MONTH)+" "+monthName
+    val yearName:String = mCal.get(Calendar.YEAR).toString()
+    val dateText:String = dayName+", "+mCal.get(Calendar.DAY_OF_MONTH)+" "+monthName+" "+yearName
     val mood = Mood.values()[entry.mood]
     val contrastColour = MaterialTheme.colorScheme.secondary.copy(alpha = .3F)
     Card (
@@ -238,9 +242,13 @@ private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
                 val w = size.width
                 val baseBarHeight = size.height
 
-                val count = currentMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
-                val barRects: List<List<Pair<Color, Float>>> = entries
-                    .groupBy { it.dateCreated }
+                val count = 31
+                val barRects: List<Pair<Int, List<Pair<Color, Float>>>> = entries
+                    .groupBy {
+                        val temp = Calendar.getInstance()
+                        temp.timeInMillis = it.dateCreated
+                        temp.get(Calendar.DAY_OF_MONTH)-1
+                    }
                     .map {
                         var percentTotal = 0
                         var itemsCount = 0
@@ -251,18 +259,19 @@ private fun MoodBars(initEntries: List<Entry>, currentMonth: Calendar){
                             itemsCount += 1
                         }
                         val totalBarHeight = ((percentTotal.toFloat()/itemsCount.toFloat())/100)*baseBarHeight
-                        moodCountsArray.mapIndexed {index, moodCount  ->
+                        Pair(it.key, moodCountsArray.mapIndexed {index, moodCount  ->
                             val moodColor = Mood.values()[index].color
                             val partialBarHeight = totalBarHeight*(moodCount.toFloat()/itemsCount.toFloat())
                             Pair(moodColor, partialBarHeight)
-                        }
+                        })
                     }
-                barRects.forEachIndexed{index, barRectMiniList ->
+                barRects.forEach{barRectMiniListPair ->
                     var currentTotalOffset = 0F
+                    val barRectMiniList = barRectMiniListPair.second
                     barRectMiniList.forEach { barRect ->
                         drawRect(
                             color = barRect.first,
-                            topLeft = Offset(x = index * (w/count), y = baseBarHeight-barRect.second-currentTotalOffset),
+                            topLeft = Offset(x = barRectMiniListPair.first * (w/count), y = baseBarHeight-barRect.second-currentTotalOffset),
                             size = Size(30f, barRect.second) //fix width
                         )
                         currentTotalOffset+=barRect.second
