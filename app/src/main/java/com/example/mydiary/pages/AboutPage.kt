@@ -2,18 +2,21 @@
 
 package com.example.mydiary.pages
 
-import android.content.Intent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,10 +40,34 @@ fun AboutPage(navController: NavController) {
         }
     ) { contentPadding ->
         Column (modifier = Modifier.padding(contentPadding).fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-            Text("Version: 1.0.0")
-            Text("Author: Leo Ring")
-            Text("Project Github: https://github.com/leo030303/Diary")
-            Text("License: ")
+            Card(
+                modifier = Modifier.padding(15.dp).fillMaxWidth()
+            ) {
+                Text(
+                    modifier = Modifier.padding(10.dp),
+                    text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)) {
+                        append("Version: \n")
+                    }
+                    append("1.0.0 \n\n")
+
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)) {
+                        append("Author: \n")
+                    }
+                    append("Leo Ring \n\n")
+
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)) {
+                        append("Project Github: \n")
+                    }
+                    append("https://github.com/leo030303/Diary \n\n")
+
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)) {
+                        append("License: \n")
+                    }
+                    append("GNU General Public License \n")
+                }
+                )
+            }
         }
     }
 }

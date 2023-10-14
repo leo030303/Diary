@@ -3,7 +3,6 @@
 package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
-import android.util.Log
 import android.widget.DatePicker
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
