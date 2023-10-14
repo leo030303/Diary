@@ -21,10 +21,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
@@ -203,30 +206,44 @@ fun PopupWindowDialog(entryDao: EntryDao, navController: NavController) {
     if(NewEntryPageViewModel.getInstance().uiState.collectAsState().value.showConfirmationPopup){
         Box {
             val popupWidth = 300.dp
-            val popupHeight = 100.dp
+            val popupHeight = 150.dp
             Popup(
                 alignment = Alignment.TopCenter,
                 properties = PopupProperties()
             ) {
                 Box(
-                    Modifier
-                        .size(popupWidth, popupHeight)
-                        .padding(top = 5.dp)
-                        .border(1.dp, color = Color.Black, shape = RoundedCornerShape(10.dp))
-                        .background(color = Color.White, shape = RoundedCornerShape(10.dp))
+                    Modifier.size(popupWidth, popupHeight)
                 ) {
-                    Column(
+                    Card (
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(text="Are you sure you want to delete this entry?")
+                            .padding(horizontal = 20.dp)
+                            .border(1.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp)),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 5.dp
+                        )
+                    ){
+                        Text(
+                            text = "Are you sure you want to delete this entry?",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(15.dp)
+                        )
+                        Spacer(modifier = Modifier.weight(1F))
                         Row {
-                            Button(onClick = { deleteEntry(entryDao, navController) }){Text(text="Yes")}
+                            Button(
+                                onClick = { deleteEntry(entryDao, navController) },
+                                modifier = Modifier.padding(10.dp)
+                            ){
+                                Text(text="Yes")
+                            }
                             Spacer(modifier = Modifier.weight(1F))
-                            Button(onClick = { NewEntryPageViewModel.getInstance().toggleConfirmation() }){Text(text="No")}
+                            Button(
+                                onClick = { NewEntryPageViewModel.getInstance().toggleConfirmation() },
+                                modifier = Modifier.padding(10.dp)
+                            ){
+                                Text(text="No")
+                            }
                         }
                     }
                 }
