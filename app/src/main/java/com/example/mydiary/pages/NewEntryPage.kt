@@ -4,7 +4,7 @@ package com.example.mydiary.pages
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
-import androidx.compose.foundation.background
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,11 +17,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -70,6 +68,12 @@ fun NewEntryPage(navController: NavController, entryDao: EntryDao, entryID:Int?)
         }
     ) { contentPadding ->
         Column (modifier = Modifier.padding(contentPadding).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            BackHandler(
+                enabled = (entryID == 0 && NewEntryPageViewModel.getInstance().uiState.collectAsState().value.content != "")
+            ) {
+                NewEntryPageViewModel.getInstance().saveToDatabase(entryDao)
+                navController.navigateUp()
+            }
             DiaryDatePicker()
             MoodSelector()
             PopupWindowDialog( entryDao = entryDao, navController = navController)

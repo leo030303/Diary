@@ -50,7 +50,7 @@ class NewEntryPageViewModel : ViewModel() {
         }
     }
 
-    fun exitPage(navController: NavController){
+    fun resetData(){
         selectedDate = Calendar.getInstance()
         _uiState.update { currentState ->
             currentState.copy(
@@ -61,6 +61,9 @@ class NewEntryPageViewModel : ViewModel() {
                 showConfirmationPopup = false
             )
         }
+    }
+
+    fun exitPage(navController: NavController){
         navController.navigateUp()
     }
 
@@ -107,8 +110,16 @@ class NewEntryPageViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if(uiState.value.entryID != 0){
-                    entryDao.delete(Entry(eid= uiState.value.entryID, content = uiState.value.content, dateCreated = selectedDate.toInstant().toEpochMilli(), mood = uiState.value.mood))
+                    entryDao.delete(
+                        Entry(
+                            eid= uiState.value.entryID,
+                            content = uiState.value.content,
+                            dateCreated = selectedDate.toInstant().toEpochMilli(),
+                            mood = uiState.value.mood
+                        )
+                    )
                 }
+                resetData()
             } catch (e: Exception) {
                 println("The flow has thrown an exception: $e")
             }
@@ -123,16 +134,7 @@ class NewEntryPageViewModel : ViewModel() {
                 } else{
                     entryDao.insert(Entry(eid = 0, content = uiState.value.content, dateCreated = selectedDate.toInstant().toEpochMilli(), mood = uiState.value.mood))
                 }
-                selectedDate = Calendar.getInstance()
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        content = "",
-                        mood = 2,
-                        dateString = "",
-                        entryID = 0,
-                        showConfirmationPopup = false
-                    )
-                }
+                resetData()
             } catch (e: Exception) {
                 println("The flow has thrown an exception: $e")
             }

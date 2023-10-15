@@ -163,7 +163,11 @@ private fun EntryItem(entry: Entry, navController: NavController){
         Row(
             modifier = Modifier.background(color = contrastColour)
         ){
-            Text(modifier = Modifier.padding(5.dp), text = dateText, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                text = dateText,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 18.sp,
+            )
             Spacer(modifier = Modifier.weight(1F))
             Icon(
                 imageVector = ImageVector.vectorResource(mood.iconResourceID),
@@ -171,8 +175,11 @@ private fun EntryItem(entry: Entry, navController: NavController){
                 tint = mood.color,
                 modifier = Modifier.size(40.dp)
             )
-            Text(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp), text = mood.title,
-                color = mood.color, fontWeight = FontWeight.Bold, fontSize = 25.sp,
+            Text(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                text = mood.title,
+                color = mood.color,
+                fontWeight = FontWeight.Bold,
+                fontSize = 25.sp,
                 fontStyle = FontStyle.Italic
             )
         }
