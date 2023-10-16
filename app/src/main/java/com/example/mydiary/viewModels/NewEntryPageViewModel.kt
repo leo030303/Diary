@@ -15,24 +15,14 @@ data class NewEntryPageUIState(
     val mood: Int = 2,
     val dateString: String = "",
     val entryID: Int = 0,
-    val showConfirmationPopup: Boolean = false
+    val showConfirmationPopup: Boolean = false,
+    val selectedDate:Calendar = Calendar.getInstance(),
 )
 
 class NewEntryPageViewModel : ViewModel() {
-    companion object {
-
-        @Volatile
-        private var instance: NewEntryPageViewModel? = null
-
-        fun getInstance() =
-            instance ?: synchronized(this) {
-                instance ?: NewEntryPageViewModel().also { instance = it }
-            }
-    }
     // Expose screen UI state
     private val _uiState = MutableStateFlow(NewEntryPageUIState())
     val uiState: StateFlow<NewEntryPageUIState> = _uiState.asStateFlow()
-    private var selectedDate:Calendar = Calendar.getInstance()
 
     fun updateContent(newContent: String) {
         _uiState.update { currentState ->
@@ -51,33 +41,35 @@ class NewEntryPageViewModel : ViewModel() {
     }
 
     fun resetData(){
-        selectedDate = Calendar.getInstance()
         _uiState.update { currentState ->
             currentState.copy(
                 content = "",
                 mood = 2,
                 dateString = "",
                 entryID = 0,
-                showConfirmationPopup = false
+                showConfirmationPopup = false,
+                selectedDate = Calendar.getInstance(),
             )
         }
     }
 
     fun exitPage(navController: NavController){
         navController.navigateUp()
+        resetData()
     }
 
     fun updateID(newID: Int, entryDao: EntryDao) {
         viewModelScope.launch(Dispatchers.IO) {
             val entryItem = entryDao.getEntryByID(newID)
             if(entryItem!=null){
-                selectedDate.timeInMillis = entryItem.dateCreated
+                val newDate = Calendar.Builder().setInstant(entryItem.dateCreated).build()
                 _uiState.update { currentState ->
                     currentState.copy(
                         entryID = newID,
                         content = entryItem.content,
                         mood = entryItem.mood,
-                        dateString = "${selectedDate.get(Calendar.DAY_OF_MONTH)}/${selectedDate.get(Calendar.MONTH)+1}/${selectedDate.get(Calendar.YEAR)}"
+                        selectedDate = newDate,
+                        dateString = "${newDate.get(Calendar.DAY_OF_MONTH)}/${newDate.get(Calendar.MONTH)+1}/${newDate.get(Calendar.YEAR)}",
                     )
                 }
             }
@@ -85,14 +77,15 @@ class NewEntryPageViewModel : ViewModel() {
     }
 
     fun updateDate(newDay: Int, newMonth: Int, newYear: Int) {
-        selectedDate = Calendar.Builder()
+        val newDate = Calendar.Builder()
             .set(Calendar.YEAR, newYear)
             .set(Calendar.MONTH, newMonth)
             .set(Calendar.DAY_OF_MONTH, newDay)
             .build()
         _uiState.update { currentState ->
             currentState.copy(
-                dateString = "${selectedDate.get(Calendar.DAY_OF_MONTH)}/${selectedDate.get(Calendar.MONTH)+1}/${selectedDate.get(Calendar.YEAR)}"
+                selectedDate = newDate,
+                dateString = "${newDate.get(Calendar.DAY_OF_MONTH)}/${newDate.get(Calendar.MONTH)+1}/${newDate.get(Calendar.YEAR)}"
             )
         }
     }
@@ -114,7 +107,7 @@ class NewEntryPageViewModel : ViewModel() {
                         Entry(
                             eid= uiState.value.entryID,
                             content = uiState.value.content,
-                            dateCreated = selectedDate.toInstant().toEpochMilli(),
+                            dateCreated = uiState.value.selectedDate.toInstant().toEpochMilli(),
                             mood = uiState.value.mood
                         )
                     )
@@ -130,11 +123,10 @@ class NewEntryPageViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if(uiState.value.entryID != 0){
-                    entryDao.update(Entry(eid = uiState.value.entryID, content = uiState.value.content, dateCreated = selectedDate.toInstant().toEpochMilli(), mood = uiState.value.mood))
+                    entryDao.update(Entry(eid = uiState.value.entryID, content = uiState.value.content, dateCreated = uiState.value.selectedDate.toInstant().toEpochMilli(), mood = uiState.value.mood))
                 } else{
-                    entryDao.insert(Entry(eid = 0, content = uiState.value.content, dateCreated = selectedDate.toInstant().toEpochMilli(), mood = uiState.value.mood))
+                    entryDao.insert(Entry(eid = 0, content = uiState.value.content, dateCreated = uiState.value.selectedDate.toInstant().toEpochMilli(), mood = uiState.value.mood))
                 }
-                resetData()
             } catch (e: Exception) {
                 println("The flow has thrown an exception: $e")
             }

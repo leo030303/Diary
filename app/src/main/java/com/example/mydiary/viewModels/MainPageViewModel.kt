@@ -19,16 +19,6 @@ data class MainPageUIState(
 )
 
 class MainPageViewModel : ViewModel() {
-    companion object {
-
-        @Volatile
-        private var instance: MainPageViewModel? = null
-
-        fun getInstance() =
-            instance ?: synchronized(this) {
-                instance ?: MainPageViewModel().also { instance = it }
-            }
-    }
     private val _uiState = MutableStateFlow(MainPageUIState())
     val uiState: StateFlow<MainPageUIState> = _uiState.asStateFlow()
 

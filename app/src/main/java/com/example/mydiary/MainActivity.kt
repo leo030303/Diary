@@ -101,16 +101,35 @@ class MainActivity : ComponentActivity() {
             MyDiaryTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     NavHost(navController = navController, startDestination = "mainPage") {
-                        composable("mainPage") { MainPage(navController, entryDao) }
+                        composable("mainPage") {
+                            MainPage(
+                                navController = navController,
+                                entryDao = entryDao
+                            )
+                        }
                         composable(
                             "newEntryPage/{entryID}",
                             arguments = listOf(navArgument("entryID") { type = NavType.IntType })
                         ) {backStackEntry ->
-                            NewEntryPage(navController, entryDao, entryID = backStackEntry.arguments?.getInt("entryID"))
+                            NewEntryPage(
+                                navController = navController,
+                                entryDao = entryDao,
+                                entryID = backStackEntry.arguments?.getInt("entryID")
+                            )
                         }
 
-                        composable("settingsPage") { SettingsPage(navController, readFileRequest, writeFileRequest) }
-                        composable("aboutPage") { AboutPage(navController) }
+                        composable("settingsPage") {
+                            SettingsPage(
+                                navController = navController,
+                                filePickerCallback = readFileRequest,
+                                fileWriterCallback = writeFileRequest
+                            )
+                        }
+                        composable("aboutPage") {
+                            AboutPage(
+                                navController = navController
+                            )
+                        }
                     }
                 }
             }

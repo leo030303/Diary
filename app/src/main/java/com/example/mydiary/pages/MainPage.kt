@@ -45,8 +45,8 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainPage(navController: NavController, entryDao: EntryDao) {
-    MainPageViewModel.getInstance().getEntries(entryDao)
+fun MainPage(viewModel: MainPageViewModel = MainPageViewModel(), navController: NavController, entryDao: EntryDao) {
+    viewModel.getEntries(entryDao)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -60,8 +60,8 @@ fun MainPage(navController: NavController, entryDao: EntryDao) {
                             contentDescription = "Settings"
                         )
                     }
-                    IconButton(onClick = { MainPageViewModel.getInstance().toggleSearch(entryDao) }) {
-                        if(!MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch){
+                    IconButton(onClick = { viewModel.toggleSearch(entryDao) }) {
+                        if(!viewModel.uiState.collectAsState().value.displaySearch){
                             Icon(
                                 imageVector = Icons.Filled.Search,
                                 contentDescription = "Search"
@@ -85,23 +85,23 @@ fun MainPage(navController: NavController, entryDao: EntryDao) {
         }
     ) { contentPadding ->
         Column (modifier = Modifier.padding(contentPadding)) {
-            SearchView(entryDao = entryDao)
-            MonthSelector(entryDao = entryDao)
-            if(!MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch){
-                MoodBars(MainPageViewModel.getInstance().uiState.collectAsState().value.entries)
+            SearchView(viewModel, entryDao)
+            MonthSelector(viewModel, entryDao)
+            if(!viewModel.uiState.collectAsState().value.displaySearch){
+                MoodBars(viewModel.uiState.collectAsState().value.entries)
             }
-            EntriesList(MainPageViewModel.getInstance().uiState.collectAsState().value.entries, navController)
+            EntriesList(viewModel.uiState.collectAsState().value.entries, navController)
         }
     }
 }
 
 
 @Composable
-private fun MonthSelector(entryDao: EntryDao){
-    if(!MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch){
+private fun MonthSelector(viewModel: MainPageViewModel, entryDao: EntryDao){
+    if(!viewModel.uiState.collectAsState().value.displaySearch){
         Row {
             IconButton(
-                onClick = { MainPageViewModel.getInstance().decrementSelectedMonth(entryDao) }
+                onClick = { viewModel.decrementSelectedMonth(entryDao) }
             ) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
@@ -110,13 +110,13 @@ private fun MonthSelector(entryDao: EntryDao){
                 )
             }
             Spacer(Modifier.weight(1f))
-            MainPageDatePicker(entryDao)
+            MainPageDatePicker(viewModel, entryDao)
             Spacer(Modifier.weight(1f))
             val temp = Calendar.getInstance()
             temp.set(Calendar.DAY_OF_MONTH, 1)
-            if(MainPageViewModel.getInstance().uiState.collectAsState().value.selectedMonth < temp){
+            if(viewModel.uiState.collectAsState().value.selectedMonth < temp){
                 IconButton(
-                    onClick = { MainPageViewModel.getInstance().incrementSelectedMonth(entryDao) }
+                    onClick = { viewModel.incrementSelectedMonth(entryDao) }
                 ) {
                     Icon(
                         imageVector = Icons.Filled.ArrowForward,
@@ -194,21 +194,19 @@ private fun EntryItem(entry: Entry, navController: NavController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchView(
-    entryDao: EntryDao
-) {
+fun SearchView(viewModel: MainPageViewModel, entryDao: EntryDao) {
     BackHandler(
-        enabled = MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch
+        enabled = viewModel.uiState.collectAsState().value.displaySearch
     ) {
-        MainPageViewModel.getInstance().toggleSearch(entryDao)
+        viewModel.toggleSearch(entryDao)
     }
-    if(MainPageViewModel.getInstance().uiState.collectAsState().value.displaySearch){
+    if(viewModel.uiState.collectAsState().value.displaySearch){
         val focusRequester = remember { FocusRequester() }
         var textFieldLoaded by remember { mutableStateOf(false) }
         TextField(
-            value = MainPageViewModel.getInstance().uiState.collectAsState().value.searchBarText,
+            value = viewModel.uiState.collectAsState().value.searchBarText,
             onValueChange = { value ->
-                MainPageViewModel.getInstance().updateSearchBar(value, entryDao)
+                viewModel.updateSearchBar(value, entryDao)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -230,10 +228,10 @@ fun SearchView(
                 )
             },
             trailingIcon = {
-                if (MainPageViewModel.getInstance().uiState.collectAsState().value.searchBarText != "") {
+                if (viewModel.uiState.collectAsState().value.searchBarText != "") {
                     IconButton(
                         onClick = {
-                            MainPageViewModel.getInstance().updateSearchBar("", entryDao) // Remove text from TextField when you press the 'X' icon
+                            viewModel.updateSearchBar("", entryDao) // Remove text from TextField when you press the 'X' icon
                         }
                     ) {
                         Icon(
@@ -329,7 +327,7 @@ private fun MoodBars(initEntries: List<Entry>){
 }
 
 @Composable
-private fun MainPageDatePicker(entryDao: EntryDao){
+private fun MainPageDatePicker(viewModel: MainPageViewModel, entryDao: EntryDao){
     val mContext = LocalContext.current
 
 // Declaring integer values
@@ -339,7 +337,7 @@ private fun MainPageDatePicker(entryDao: EntryDao){
     val m1Day: Int
 
 // Initializing a Calendar
-    //val mCalendar = MainPageViewModel.getInstance().uiState.collectAsState().value.selectedDate
+    //val mCalendar = viewModel.uiState.collectAsState().value.selectedDate
     val mCalendar = Calendar.getInstance()
     if (mCalendar.get(Calendar.HOUR_OF_DAY) <= 6){
         mCalendar.add(Calendar.DAY_OF_MONTH, -1)
@@ -359,7 +357,7 @@ private fun MainPageDatePicker(entryDao: EntryDao){
     val mDatePickerDialog = DatePickerDialog(
         mContext,
         { _: DatePicker, mYear: Int, mMonth: Int, _: Int ->
-            MainPageViewModel.getInstance().setSelectedMonth(mMonth, mYear, entryDao)
+            viewModel.setSelectedMonth(mMonth, mYear, entryDao)
         }, m1Year, m1Month, m1Day
     )
     Button(
@@ -369,11 +367,11 @@ private fun MainPageDatePicker(entryDao: EntryDao){
         }
     ){
         Text(text = "${
-            MainPageViewModel.getInstance().uiState.collectAsState().value.selectedMonth.getDisplayName(
+            viewModel.uiState.collectAsState().value.selectedMonth.getDisplayName(
                 Calendar.MONTH,
                 Calendar.LONG,
                 Locale.ENGLISH
             )!!
-        } ${MainPageViewModel.getInstance().uiState.collectAsState().value.selectedMonth.get(Calendar.YEAR)}")
+        } ${viewModel.uiState.collectAsState().value.selectedMonth.get(Calendar.YEAR)}")
     }
 }

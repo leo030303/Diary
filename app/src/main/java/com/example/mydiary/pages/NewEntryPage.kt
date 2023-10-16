@@ -36,9 +36,9 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewEntryPage(navController: NavController, entryDao: EntryDao, entryID:Int?) {
+fun NewEntryPage(viewModel: NewEntryPageViewModel = NewEntryPageViewModel(), navController: NavController, entryDao: EntryDao, entryID:Int?) {
     if(entryID != null && entryID != 0){
-        NewEntryPageViewModel.getInstance().updateID(entryID, entryDao)
+        viewModel.updateID(entryID, entryDao)
     }
     Scaffold(
         topBar = {
@@ -47,7 +47,7 @@ fun NewEntryPage(navController: NavController, entryDao: EntryDao, entryID:Int?)
                     Text(text = "New Entry", color = MaterialTheme.colorScheme.primary)
                 },
                 navigationIcon = {
-                    IconButton(onClick = { NewEntryPageViewModel.getInstance().exitPage(navController) }) {
+                    IconButton(onClick = { viewModel.exitPage(navController) }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Back Button"
@@ -56,7 +56,7 @@ fun NewEntryPage(navController: NavController, entryDao: EntryDao, entryID:Int?)
                 },
                 actions = {
                     if(entryID != null && entryID != 0){
-                        IconButton(onClick = { NewEntryPageViewModel.getInstance().toggleConfirmation() }) {
+                        IconButton(onClick = { viewModel.toggleConfirmation() }) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
                                 contentDescription = "Delete"
@@ -69,20 +69,20 @@ fun NewEntryPage(navController: NavController, entryDao: EntryDao, entryID:Int?)
     ) { contentPadding ->
         Column (modifier = Modifier.padding(contentPadding).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             BackHandler(
-                enabled = (entryID == 0 && NewEntryPageViewModel.getInstance().uiState.collectAsState().value.content != "")
+                enabled = (entryID == 0 && viewModel.uiState.collectAsState().value.content != "")
             ) {
-                NewEntryPageViewModel.getInstance().saveToDatabase(entryDao)
-                navController.navigateUp()
+                viewModel.saveToDatabase(entryDao)
+                viewModel.exitPage(navController)
             }
-            DiaryDatePicker()
-            MoodSelector()
-            PopupWindowDialog( entryDao = entryDao, navController = navController)
-            DiaryTextInput()
+            DiaryDatePicker(viewModel)
+            MoodSelector(viewModel)
+            PopupWindowDialog(viewModel = viewModel, entryDao = entryDao, navController = navController)
+            DiaryTextInput(viewModel)
             Button(
                 modifier = Modifier.padding(10.dp),
                 onClick = {
-                    NewEntryPageViewModel.getInstance().saveToDatabase(entryDao)
-                    navController.navigateUp()
+                    viewModel.saveToDatabase(entryDao)
+                    viewModel.exitPage(navController)
                 }
             )
             {
@@ -94,19 +94,19 @@ fun NewEntryPage(navController: NavController, entryDao: EntryDao, entryID:Int?)
 
 
 @Composable
-private fun MoodSelector(){
+private fun MoodSelector(viewModel: NewEntryPageViewModel){
     Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center){
         Mood.values().reversed().forEach { mood ->
-            MoodButton(mood)
+            MoodButton(viewModel, mood)
         }
     }
 }
 
 @Composable
-private fun MoodButton(mood: Mood){
-    if(NewEntryPageViewModel.getInstance().uiState.collectAsState().value.mood == mood.value){
+private fun MoodButton(viewModel: NewEntryPageViewModel, mood: Mood){
+    if(viewModel.uiState.collectAsState().value.mood == mood.value){
         IconButton(
-            onClick = { NewEntryPageViewModel.getInstance().selectMood(mood.value) }
+            onClick = { viewModel.selectMood(mood.value) }
         ){
             Icon(
                 imageVector = ImageVector.vectorResource(mood.selectedIconResourceID),
@@ -117,7 +117,7 @@ private fun MoodButton(mood: Mood){
         }
     } else{
         IconButton(
-            onClick = { NewEntryPageViewModel.getInstance().selectMood(mood.value) }
+            onClick = { viewModel.selectMood(mood.value) }
         ){
             Icon(
                 imageVector = ImageVector.vectorResource(mood.iconResourceID),
@@ -131,11 +131,11 @@ private fun MoodButton(mood: Mood){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DiaryTextInput(){
+private fun DiaryTextInput(viewModel: NewEntryPageViewModel){
     OutlinedTextField(
         modifier = Modifier.padding(10.dp).fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = 50.dp, max = 300.dp),
-        value = NewEntryPageViewModel.getInstance().uiState.collectAsState().value.content,
-        onValueChange = { NewEntryPageViewModel.getInstance().updateContent(it) },
+        value = viewModel.uiState.collectAsState().value.content,
+        onValueChange = { viewModel.updateContent(it) },
         label = { Text("What's Up?") },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
@@ -147,7 +147,7 @@ private fun DiaryTextInput(){
 }
 
 @Composable
-private fun DiaryDatePicker(){
+private fun DiaryDatePicker(viewModel: NewEntryPageViewModel){
     val mContext = LocalContext.current
 
 // Declaring integer values
@@ -157,7 +157,7 @@ private fun DiaryDatePicker(){
     val m1Day: Int
 
 // Initializing a Calendar
-    //val mCalendar = NewEntryPageViewModel.getInstance().uiState.collectAsState().value.selectedDate
+    //val mCalendar = viewModel.uiState.collectAsState().value.selectedDate
     val mCalendar = Calendar.getInstance()
     if (mCalendar.get(Calendar.HOUR_OF_DAY) <= 6){
         mCalendar.add(Calendar.DAY_OF_MONTH, -1)
@@ -168,8 +168,8 @@ private fun DiaryDatePicker(){
     m1Month = mCalendar.get(Calendar.MONTH)
     m1Day = mCalendar.get(Calendar.DAY_OF_MONTH)
 
-    if(NewEntryPageViewModel.getInstance().uiState.collectAsState().value.dateString == ""){
-        NewEntryPageViewModel.getInstance().updateDate(m1Day, m1Month, m1Year)
+    if(viewModel.uiState.collectAsState().value.dateString == ""){
+        viewModel.updateDate(m1Day, m1Month, m1Year)
     }
 
 // Declaring a string value to
@@ -180,7 +180,7 @@ private fun DiaryDatePicker(){
     val mDatePickerDialog = DatePickerDialog(
         mContext,
         { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
-            NewEntryPageViewModel.getInstance().updateDate(mDayOfMonth, mMonth, mYear)
+            viewModel.updateDate(mDayOfMonth, mMonth, mYear)
         }, m1Year, m1Month, m1Day
     )
 
@@ -188,16 +188,16 @@ private fun DiaryDatePicker(){
         Button(onClick = {
             mDatePickerDialog.show()
         }) {
-            Text(text = NewEntryPageViewModel.getInstance().uiState.collectAsState().value.dateString)
+            Text(text = viewModel.uiState.collectAsState().value.dateString)
         }
     }
 }
 
 
-private fun deleteEntry(entryDao: EntryDao, navController: NavController){
-    NewEntryPageViewModel.getInstance().deleteEntry(entryDao)
-    NewEntryPageViewModel.getInstance().toggleConfirmation()
-    NewEntryPageViewModel.getInstance().exitPage(navController)
+private fun deleteEntry(viewModel: NewEntryPageViewModel, entryDao: EntryDao, navController: NavController){
+    viewModel.deleteEntry(entryDao)
+    viewModel.toggleConfirmation()
+    viewModel.exitPage(navController)
 }
 
 
@@ -206,8 +206,8 @@ private fun deleteEntry(entryDao: EntryDao, navController: NavController){
 
 
 @Composable
-fun PopupWindowDialog(entryDao: EntryDao, navController: NavController) {
-    if(NewEntryPageViewModel.getInstance().uiState.collectAsState().value.showConfirmationPopup){
+fun PopupWindowDialog(viewModel: NewEntryPageViewModel, entryDao: EntryDao, navController: NavController) {
+    if(viewModel.uiState.collectAsState().value.showConfirmationPopup){
         Box {
             val popupWidth = 300.dp
             val popupHeight = 150.dp
@@ -236,14 +236,14 @@ fun PopupWindowDialog(entryDao: EntryDao, navController: NavController) {
                         Spacer(modifier = Modifier.weight(1F))
                         Row {
                             Button(
-                                onClick = { deleteEntry(entryDao, navController) },
+                                onClick = { deleteEntry(viewModel, entryDao, navController) },
                                 modifier = Modifier.padding(10.dp)
                             ){
                                 Text(text="Yes")
                             }
                             Spacer(modifier = Modifier.weight(1F))
                             Button(
-                                onClick = { NewEntryPageViewModel.getInstance().toggleConfirmation() },
+                                onClick = { viewModel.toggleConfirmation() },
                                 modifier = Modifier.padding(10.dp)
                             ){
                                 Text(text="No")

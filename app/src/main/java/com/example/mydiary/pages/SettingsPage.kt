@@ -19,12 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.mydiary.viewModels.SettingsPageViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPage(navController: NavController, filePickerCallback: ActivityResultLauncher<Intent>, fileWriterCallback: ActivityResultLauncher<Intent>) {
+fun SettingsPage(viewModel: SettingsPageViewModel = SettingsPageViewModel(), navController: NavController, filePickerCallback: ActivityResultLauncher<Intent>, fileWriterCallback: ActivityResultLauncher<Intent>) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
