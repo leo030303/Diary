@@ -15,7 +15,8 @@ data class MainPageUIState(
     val entries: List<Entry> = emptyList(),
     val searchBarText: String = "",
     var selectedMonth: Calendar = Calendar.getInstance(),
-    var displaySearch: Boolean = false
+    var displaySearch: Boolean = false,
+    var searchDescending: Boolean = true,
 )
 
 class MainPageViewModel : ViewModel() {
@@ -39,6 +40,14 @@ class MainPageViewModel : ViewModel() {
             }
             currentState.copy(
                 displaySearch = !currentState.displaySearch
+            )
+        }
+    }
+
+    fun toggleSearchOrder(){
+        _uiState.update { currentState ->
+            currentState.copy(
+                searchDescending = !currentState.searchDescending
             )
         }
     }
@@ -109,11 +118,21 @@ class MainPageViewModel : ViewModel() {
                 if (uiState.value.searchBarText == ""){
                     getEntries(entryDao)
                 }else{
-                    entryDao.search("%${uiState.value.searchBarText}%").distinctUntilChanged().collect { entriesValue ->
-                        _uiState.update { currentState ->
-                            currentState.copy(
-                                entries = entriesValue,
-                            )
+                    if(uiState.value.searchDescending){
+                        entryDao.searchDesc("%${uiState.value.searchBarText}%").distinctUntilChanged().collect { entriesValue ->
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    entries = entriesValue,
+                                )
+                            }
+                        }
+                    } else {
+                        entryDao.searchAsc("%${uiState.value.searchBarText}%").distinctUntilChanged().collect { entriesValue ->
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    entries = entriesValue,
+                                )
+                            }
                         }
                     }
                 }

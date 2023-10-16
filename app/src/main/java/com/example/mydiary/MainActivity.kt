@@ -15,10 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.room.Room
-import com.example.mydiary.pages.AboutPage
-import com.example.mydiary.pages.MainPage
-import com.example.mydiary.pages.NewEntryPage
-import com.example.mydiary.pages.SettingsPage
+import com.example.mydiary.pages.*
 import com.example.mydiary.ui.theme.MyDiaryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -128,6 +125,12 @@ class MainActivity : ComponentActivity() {
                         composable("aboutPage") {
                             AboutPage(
                                 navController = navController
+                            )
+                        }
+                        composable("reportsPage") {
+                            ReportsPage(
+                                navController = navController,
+                                entryDao = entryDao
                             )
                         }
                     }

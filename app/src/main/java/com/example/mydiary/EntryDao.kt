@@ -11,8 +11,11 @@ interface EntryDao {
     @Query("SELECT * FROM entry WHERE eid = :id LIMIT 1")
     suspend fun getEntryByID(id: Int): Entry
 
-    @Query("SELECT * FROM entry WHERE content LIKE :text")
-    fun search(text: String): Flow<List<Entry>>
+    @Query("SELECT * FROM entry WHERE content LIKE :text ORDER BY date_created DESC")
+    fun searchDesc(text: String): Flow<List<Entry>>
+
+    @Query("SELECT * FROM entry WHERE content LIKE :text ORDER BY date_created ASC")
+    fun searchAsc(text: String): Flow<List<Entry>>
 
     @Query("SELECT * FROM entry WHERE date_created >= :testMonthMillis AND date_created < :nextMonthMillis ORDER BY date_created DESC")
     fun loadByMonthAndYear(testMonthMillis: Long, nextMonthMillis: Long): Flow<List<Entry>>

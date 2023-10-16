@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mydiary.*
+import com.example.mydiary.R
 import com.example.mydiary.util.Mood
 import com.example.mydiary.viewModels.MainPageViewModel
 import java.util.*
@@ -54,19 +55,44 @@ fun MainPage(viewModel: MainPageViewModel = MainPageViewModel(), navController: 
                     Text(text = "Diary", color = MaterialTheme.colorScheme.primary)
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate("settingsPage") }) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings"
-                        )
-                    }
-                    IconButton(onClick = { viewModel.toggleSearch(entryDao) }) {
-                        if(!viewModel.uiState.collectAsState().value.displaySearch){
+                    if(!viewModel.uiState.collectAsState().value.displaySearch){
+                        IconButton(onClick = { navController.navigate("settingsPage") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Settings,
+                                contentDescription = "Settings"
+                            )
+                        }
+                        IconButton(onClick = { navController.navigate("reportsPage") }) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.reports_icon),
+                                contentDescription = "Reports"
+                            )
+                        }
+                        IconButton(onClick = { viewModel.toggleSearch(entryDao) }) {
                             Icon(
                                 imageVector = Icons.Filled.Search,
                                 contentDescription = "Search"
                             )
-                        } else{
+                        }
+                    } else {
+                        val currentSearchText = viewModel.uiState.collectAsState().value.searchBarText
+                        IconButton(onClick = {
+                            viewModel.toggleSearchOrder()
+                            viewModel.updateSearchBar(currentSearchText, entryDao)
+                        }) {
+                            if (viewModel.uiState.collectAsState().value.searchDescending){
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(R.drawable.arrow_up),
+                                    contentDescription = "Search Ascending"
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(R.drawable.arrow_down),
+                                    contentDescription = "Search Descending"
+                                )
+                            }
+                        }
+                        IconButton(onClick = { viewModel.toggleSearch(entryDao) }) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
                                 contentDescription = "Close"
