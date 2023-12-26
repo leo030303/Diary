@@ -2,11 +2,14 @@ package com.example.mydiary
 
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
@@ -19,7 +22,10 @@ import com.example.mydiary.pages.*
 import com.example.mydiary.ui.theme.MyDiaryTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.*
+import kotlinx.coroutines.withContext
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 
 
 class MainActivity : ComponentActivity() {
@@ -50,7 +56,7 @@ class MainActivity : ComponentActivity() {
                                             newContent = content.substring(1, content.length - 1)
                                         }
                                     }
-                                    Entry(eid = 0, content = newContent, dateCreated = date.toFloat().toLong(), mood = mood.toInt())
+                                    Entry(eid = 0, content = newContent, dateCreated = date.toLong(), mood = mood.toInt())
                                 }
                                 .toList()
                             lifecycleScope.launch(Dispatchers.IO) {
@@ -58,8 +64,15 @@ class MainActivity : ComponentActivity() {
                                     entries.forEach {item ->
                                         entryDao.insert(item)
                                     }
+                                    Log.d("Import", "Import success")
+                                    runOnUiThread {
+                                        Toast.makeText(applicationContext, "Import Successful", Toast.LENGTH_LONG).show()
+                                    }
                                 } catch (e: Exception) {
-                                    println("The flow has thrown an exception: $e")
+                                    Log.e("Import Error", "The flow has thrown an exception: $e")
+                                    runOnUiThread {
+                                        Toast.makeText(applicationContext, "Import Failed: $e", Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             }
                             myFile.close()
@@ -80,11 +93,20 @@ class MainActivity : ComponentActivity() {
                                     val toOutput = "${entry.dateCreated},${entry.mood},${'"'+entry.content+'"'}\n"
                                     fileOutputStream.write(toOutput.toByteArray())
                                 }
+                                withContext(Dispatchers.IO) {
+                                    fileOutputStream.close()
+                                }
+                                pfd.close()
+                                Log.d("Export", "Export success")
+                                runOnUiThread {
+                                    Toast.makeText(applicationContext, "Export Successful", Toast.LENGTH_LONG).show()
+                                }
                             }
-                            fileOutputStream.close()
-                            pfd.close()
                         } catch (e: Exception) {
-                            println("The flow has thrown an exception: $e")
+                            Log.e("Export Error", "The flow has thrown an exception: $e")
+                            runOnUiThread {
+                                Toast.makeText(applicationContext, "Export Failed: $e", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 } catch (e:FileNotFoundException) {

@@ -13,20 +13,17 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.mydiary.viewModels.SettingsPageViewModel
-import kotlinx.coroutines.launch
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPage(viewModel: SettingsPageViewModel = SettingsPageViewModel(), navController: NavController, filePickerCallback: ActivityResultLauncher<Intent>, fileWriterCallback: ActivityResultLauncher<Intent>) {
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         snackbarHost = {
@@ -72,9 +69,6 @@ fun SettingsPage(viewModel: SettingsPageViewModel = SettingsPageViewModel(), nav
                         .setType("*/*")
                         .setAction(Intent.ACTION_OPEN_DOCUMENT)
                         filePickerCallback.launch(intent)
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Data Imported")
-                        }
                     },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp).fillMaxWidth()
                 ) {
@@ -91,9 +85,6 @@ fun SettingsPage(viewModel: SettingsPageViewModel = SettingsPageViewModel(), nav
                             .addCategory(Intent.CATEGORY_OPENABLE)
                             .putExtra(Intent.EXTRA_TITLE, fileName)
                         fileWriterCallback.launch(intent)
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Data Exported")
-                        }
                     },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp).fillMaxWidth()
                 ){
