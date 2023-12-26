@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                                             newContent = content.substring(1, content.length - 1)
                                         }
                                     }
-                                    Entry(eid = 0, content = newContent, dateCreated = date.toFloat().toLong(), mood = mood.toInt())
+                                    Entry(eid = 0, content = newContent, dateCreated = date.toLong(), mood = mood.toInt())
                                 }
                                 .toList()
                             lifecycleScope.launch(Dispatchers.IO) {
